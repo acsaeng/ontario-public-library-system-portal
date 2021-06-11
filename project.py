@@ -101,11 +101,15 @@ class LibraryPortal:
             except ValueError:
                 print("Invalid archive year. Please enter again.")
 
-        described_data = pd.concat([self.data.loc[idx[:, :, year], idx[:]].describe(), self.data.groupby('Year').sum().loc[year, :]])
+        sum_data = self.data.groupby('Year').sum().loc[year, :]
+        sum_data.rename('sum', inplace = True)
+        sum_dataframe = pd.DataFrame(sum_data)
+       
+        described_data = pd.concat([self.data.loc[idx[:, :, year], idx[:]].describe(), sum_dataframe.T])
 
         print("***LIBRARY DATA STATISTICS IN " + str(year) + "***")
-        # print(described_data)
-        print(self.data.groupby('Year').sum().loc[year, :].index)
+        print(described_data)
+        # print(self.data.groupby('Year').sum().loc[year, :].index)
 
         # Add library records
 
