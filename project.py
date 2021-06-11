@@ -1,3 +1,4 @@
+from typing import Type
 import numpy as np
 import pandas as pd
 
@@ -9,64 +10,73 @@ class LibraryPortal:
             data (DataFrame): DataFrame that stores detailed information about each library branch
 
         Methods:
-            library_lookup(): Return information about a specific library branch
+            branch_search(): Return information about a specific library branch
             method2(): Description
             method3(): Description
     """
-
     def __init__(self, data):
         self.data = data
     
-    def library_lookup(self):
+    def branch_search(self):
         while True:
             library_id = input("Please enter a library branch name or code: ")
             idx = pd.IndexSlice
 
             try:
                 if library_id in self.data.index.get_level_values('Library Full Name'):
-                    branch_data = self.data.loc[idx[library_id, :, 2019], idx[:]]
+                    branch_df = self.data.loc[idx[library_id, :, :], idx[:]]
+                    branch_series = branch_df.iloc[-1]
                     break
-                elif int(library_id) in self.data.index.get_level_values('Library Number'):
-                    branch_data = self.data.loc[idx[:, library_id, 2019], idx[:]]
+                elif library_id in self.data.index.get_level_values('Library Number'):
+                    branch_df = self.data.loc[idx[:, library_id, :], idx[:]]
+                    branch_series = branch_df.iloc[-1]
                     break
                 else:
                     raise ValueError
             except ValueError:
                 print("Invalid library name or code. Please enter again.")
 
-        print("***Library Branch Information***")
-        print("Library Name: " + branch_data.index.get_level_values('Library Full Name')[0])
-        print("Library Number: " + branch_data.index.get_level_values('Library Number')[1])
-        print("Service Region: ")
-        print("\nStreet Address: ")
-        print("Website: ")
-        print("Number of Print Resources: ")
-        print("Number of e-Book/e-Audio Resources: ")
 
+        print("\n***LIBRARY BRANCH INFORMATION***")
 
-
-
+        branch_dict = {"Library Name": branch_df.index[-1][0],
+                        "Library Number": branch_df.index[-1][1],
+                        "Service Region" : branch_series['Ontario Library Service Region'],
+                        "Street Address": [branch_series['Street Address'], branch_series['City/Town'], branch_series['Postal Code']],
+                        "Website": branch_series['Web Site Address'],
+                        "Number of Print Resources": branch_series['Total Print Titles Held'],
+                        "Number of e-Book/e-Audio Resources": branch_series['Total E-book and E-audio Titles']
+                        }
+        
+        for header, info in branch_dict.items():
+            if info is np.nan:
+                print(header + ": N/A")
+            elif header == "Street Address":
+                try:
+                    print(header + ": " + info[0] + "\n\t\t" + info[1] + ", ON, " + info[2])
+                except TypeError:
+                    print(header + ": N/A")
+            else:
+                print(header + ": " + str(info))
 
 
 def import_data():
     library_data_2017 = pd.read_excel(r".\Ontario Public Library Datasets\ontario_public_library_statistics_2017.xlsx", index_col=[0, 1, 2])
-    library_data_2018 = pd.read_csv(r".\Ontario Public Library Datasets\ontario_public_library_statistics_2018.csv", index_col=[0, 1, 2])
-    library_data_2019 = pd.read_csv(r".\Ontario Public Library Datasets\ontario_public_library_statistics_2019.csv", index_col=[0, 1, 2])
+    library_data_2018 = pd.read_excel(r".\Ontario Public Library Datasets\ontario_public_library_statistics_2018.xlsx", index_col=[0, 1, 2])
+    library_data_2019 = pd.read_excel(r".\Ontario Public Library Datasets\ontario_public_library_statistics_2019.xlsx", index_col=[0, 1, 2])
 
     library_data_master = pd.concat([library_data_2017, library_data_2018, library_data_2019])
     library_data_master = library_data_master.sort_index()
 
     return library_data_master
 
-    # library_master_data.to_excel(r'Test.xlsx', index=True)
 
 def add_data(data):
     data['Total Resources'] = data['Total Print Titles Held'] + data['Total E-book and E-audio Titles']
     
     data['No. Cardholders'].replace(0, np.nan, inplace=True)
     # data['Resources per Cardholder'] = data['Total Resources'] / data['No. Cardholders']
-    data.to_excel(r'Test.xlsx', index=True)
-    print(data)
+    # data.to_excel(r'Test.xlsx', index=True)
 
     return data
 
@@ -76,33 +86,38 @@ def main():
     library_data = add_data(import_data())
     portal = LibraryPortal(library_data)
 
-    # Prompt user selection
     while True:
-        print("1. Library lookup")
-        print("2. Find a library near you")
-        print("3. Archives")
+        print("\n***MAIN MENU***")
+        print("1. Branch Information Search")
+        print("2. Libraries Near Me")
+        print("3. Yearly Archives")
         print("4. Quit")
 
-        # Verify that input is a valid numbered option from above
-        try:
-            user_selection = int(input("\nPlease select an action: "))
-            
-            if user_selection == 1:
-                # Option 1: Library Lookup
-                # A tool to find more information about a specific library branch
-                portal.library_lookup()
-            elif user_selection == 2:
-                pass
-            elif user_selection == 3:
-                pass
-            elif user_selection == 4:
-                print("Thank you for using the Ontario Public Library System Portal!")
-                break
-            else:
-                raise ValueError
-        except ValueError:
-            # Raise ValueError if an option is not selected
-            print("Invalid input! Please enter a number between 1 and 4.")
+        # Prompt user selection
+        while True:
+            # Verify that input is a valid numbered option from above
+            try:
+                user_selection = int(input("\nPlease select an action: "))
+
+                if user_selection in range(1, 5):
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                # Raise ValueError if input in invalid
+                print("Invalid input! Please enter a number between 1 and 4.")
+        
+        if user_selection == 1:
+            # Option 1: Branch Information Search
+            # A tool to find more information about a specific library branch
+            portal.branch_search()
+        elif user_selection == 2:
+            pass
+        elif user_selection == 3:
+            pass
+        elif user_selection == 4:
+            print("Thank you for using the Ontario Public Library System Portal!")
+            break
 
 
 if __name__ == '__main__':
