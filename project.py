@@ -25,7 +25,7 @@ class LibraryPortal:
         print("\n***MAIN MENU***")
         print("1. Branch Information Search")
         print("2. Libraries Locator")
-        print("3. Resource Archives")
+        print("3. Access Library Archives")
         print("4. Quit")
 
         # Prompt user selection
@@ -38,19 +38,20 @@ class LibraryPortal:
                     # Option 1: Branch Information Search
                     # A tool to find more information about a specific library branch
                     self.branch_search()
-                    self.main_menu()
                 elif user_selection == 2:
                     break
                 elif user_selection == 3:
-                    break
+                    # Option 3: Access Library Archives
+                    # A tool to view the yearly statistics of the Ontario Public Library System
+                    self.access_archives()
                 elif user_selection == 4:
                     print("Thank you for using the Ontario Public Library System Portal!")
                     exit()
                 else:
-                        raise ValueError
+                    raise ValueError
             except ValueError:
                 # Raise ValueError if input in invalid
-                print("Invalid input! Please enter a number between 1 and 4.")
+                print("Invalid input. Please enter a number between 1 and 4.")
 
     def branch_search(self):
         idx = pd.IndexSlice
@@ -86,6 +87,30 @@ class LibraryPortal:
             except ValueError:
                 print("Invalid input. Please enter again.")
 
+    def access_archives(self):
+        idx = pd.IndexSlice
+
+        while True:
+            try:
+                year = int(input("Please enter a year between 2017 and 2019: "))
+
+                if year in range(2017, 2020):
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                print("Invalid archive year. Please enter again.")
+
+        described_data = pd.concat([self.data.loc[idx[:, :, year], idx[:]].describe(), self.data.groupby('Year').sum().loc[year, :]])
+
+        print("***LIBRARY DATA STATISTICS IN " + str(year) + "***")
+        # print(described_data)
+        print(self.data.groupby('Year').sum().loc[year, :].index)
+
+        # Add library records
+
+        
+        
 
     def print_branch_info(self, branch_df):
         branch_series = branch_df.iloc[-1]
@@ -127,14 +152,18 @@ def import_data():
     return library_data_master
 
 
-def add_data(data):
-    data['Total Resources'] = data['Total Print Titles Held'] + data['Total E-book and E-audio Titles']
-    
-    data['No. Cardholders'].replace(0, np.nan, inplace=True)
-    data['Resources per Cardholder'] = data['Total Resources'] / data['No. Cardholders']
-    data.to_excel(r'Test.xlsx', index=True)
+def add_data(library_data):
+    idx = pd.IndexSlice
 
-    return data
+    total_resources = library_data['Total Print Titles Held'] + library_data['Total E-book and E-audio Titles']
+    library_data_merge1 = pd.merge(library_data, pd.DataFrame({'Total Resources': total_resources}), left_index=True, right_index=True)
+
+    resources_per_cardholder = library_data_merge1['Total Resources'] / library_data_merge1['No. Cardholders']
+    resources_per_cardholder.replace(0, np.nan, inplace=True)
+    library_data_merge2 = pd.merge(library_data_merge1, pd.DataFrame({'Resources per Cardholder': resources_per_cardholder}), left_index=True, right_index=True)
+    library_data_merge2['Resources per Cardholder'].replace(np.nan, 0, inplace=True)
+
+    return library_data_merge2
 
 
 def main():
@@ -144,6 +173,7 @@ def main():
     # Create a LibraryPortal object and access the main menu
     portal = LibraryPortal(library_data)
     portal.main_menu()
+
 
 if __name__ == '__main__':
     main()
