@@ -107,11 +107,17 @@ class LibraryPortal:
        
         described_data = pd.concat([self.data.loc[idx[:, :, year], idx[:]].describe(), sum_dataframe.T])
 
-        print("***LIBRARY DATA STATISTICS IN " + str(year) + "***")
+        print("\n***LIBRARY DATA STATISTICS IN " + str(year) + "***")
         print(described_data)
         # print(self.data.groupby('Year').sum().loc[year, :].index)
 
         # Add library records
+        
+        for col in self.data.columns[8:]:
+            print("The library with the most", col, "was")
+            max_value = self.data.loc[idx[:, :, year], idx[col]].max()
+            
+            # print(self.data.iloc[idx[:, :, year_dict[year]], idx[col]].max().get_level_values('Library Full Name'))
 
         
         
