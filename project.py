@@ -13,6 +13,7 @@ class LibraryPortal:
             main_menu(): Prompt user to select an action in the library portal
             branch_search(): Search the data for information of a specific library branch
             library_locator(): Find a library nearby based on user's postal code and needs
+            print_nearby_branches():
             access_archive(): Access yearly data and statisical information of the library system
             print_branch_data(): Print the information of a specific library branch
     """
@@ -67,7 +68,7 @@ class LibraryPortal:
         """Prompt for user to choose whether to go to the main menu or go back to perform the current option again
 
             Arguments:
-                current_option (int): The library portal option number that the user is currently using
+                None
             
             Returns:
                 True for library_locator() selection if user wants to go back, otherwise None
@@ -75,20 +76,19 @@ class LibraryPortal:
         # Prompt user to select an option
         while True:
             print("\nEnter [m] to go to the Main Menu")
-            user_action = input("Enter [b] to go back: ")
+            next_action = input("Enter [b] to go back: ")
 
             try:
-                if user_action == "m":
+                if next_action == "m":
                     # If user enters 'm', go back to the main menu. 
                     self.main_menu()
-                elif user_action == 'b' and current_option == 1:
-                    # If user enters 'b' for any of the options below, go back to previous page
+                elif next_action == 'b' and current_option == 1:
                     self.branch_search()
-                elif user_action == 'b' and current_option == 2:
+                elif next_action == 'b' and current_option == 2.1:
                     self.library_locator()
-                elif user_action == 'b' and current_option == 2.1:
+                elif next_action == 'b' and current_option == 2.2:
                     return True
-                elif user_action == 'b' and current_option == 3:
+                elif next_action == 'b' and current_option == 3:
                     self.access_archives()
                 else:
                     raise ValueError
@@ -163,7 +163,7 @@ class LibraryPortal:
         print("1. Borrow Library Resources")
         print("2. Work or Study Spaces")
         print("3. No Preference")
-
+        
         # Prompt user to select an option
         while True:
             # Verify that input is a valid numbered option from above
@@ -189,43 +189,42 @@ class LibraryPortal:
                 # Raise ValueError if input in invalid
                 print("Invalid input. Please enter a number between 1 and 3.")
         
-        while True:
-            # Print the first five library branches nearby and available to the user
-            if len(data_by_postal_code.index) == 0:
-                # If filtered DataFrame is empty, print message to user that no libraries were found 
-                print("\nSorry! Could not find any libraries nearby.")
-                self.next_user_action(2)
-            else:
-                # Otherwise print up to the first five branches that were found
-                print("\nHere's a list of libraries we found for you:")
-                for i, row_index in enumerate(data_by_postal_code.iterrows(), start=1):
-                    print(str(i) + ". " + row_index[0][0])
-                
-                    if i == 5:
-                        break
-                
-                # Prompt user to select a library branch from the list
-                while True:
-                    try:
-                        branch_selection = int(input("\nSelect a number to view its branch information: "))
+        # Print the first five library branches nearby and available to the user
+        if len(data_by_postal_code.index) == 0:
+            # If filtered DataFrame is empty, print message to user that no libraries were found 
+            print("\nSorry! Could not find any libraries nearby.")
+            self.next_user_action(2.1)
+        else:
+            # Otherwise print up to the first five branches that were found
+            print_list = True
 
-                        if branch_selection in range(1, 6):
-                            # If valid number, get the library name and slice of its data from the original DataFrame
-                            branch_name = data_by_postal_code.index.get_level_values('Library Full Name')[branch_selection - 1]
-                            branch_data = self.data.loc[pd.IndexSlice[branch_name, :, :], pd.IndexSlice[:]]
-                            break
-                        else:
-                            raise ValueError
-                    except:
-                        # Raise ValueError if input in invalid
-                        print("Invalid input. Please enter a number between 1 and 5.")
-
+            while print_list:
+                branch_data = self.print_nearby_branches(data_by_postal_code)
                 self.print_branch_info(branch_data)  # Print the information of the selected library branch
-            
-                # Prompt user to select next action
-                if self.next_user_action(2.1):
-                    # If user selects [b], re-print the list of nearby branches and repeat the selection process
-                    continue
+                print_list = self.next_user_action(2.2)  # Prompt user to select next action
+                    
+    def print_nearby_branches(self, sorted_locations):
+        print("\nHere's a list of libraries we found for you:")
+        for i, row_index in enumerate(sorted_locations.iterrows(), start=1):
+            print(str(i) + ". " + row_index[0][0])
+        
+            if i == 5:
+                break
+        
+        # Prompt user to select a library branch from the list
+        while True:
+            try:
+                branch_selection = int(input("\nSelect a number to view its branch information: "))
+
+                if branch_selection in range(1, 6):
+                    # If valid number, get the library name and slice of its data from the original DataFrame
+                    branch_name = sorted_locations.index.get_level_values('Library Full Name')[branch_selection - 1]
+                    return self.data.loc[pd.IndexSlice[branch_name, :, :], pd.IndexSlice[:]]
+                else:
+                    raise ValueError
+            except:
+                # Raise ValueError if input in invalid
+                print("Invalid input. Please enter a number between 1 and 5.")
 
     def access_archives(self):
         idx = pd.IndexSlice
