@@ -222,7 +222,7 @@ class LibraryPortal:
             except:
                 # Raise ValueError if input in invalid
                 print("Invalid input. Please enter a number between 1 and 5.")
-
+    
         self.print_branch_info(self.__data.loc[pd.IndexSlice[branch_name, :, :], pd.IndexSlice[:]])
         self.next_user_action(2.2, sorted_locations)  # Prompt user to select next action
 
