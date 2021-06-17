@@ -1,6 +1,6 @@
 # ENSF 592 Project
-# Group 30
 # Timothy Mok & Aron Saengchan
+# Group 30
 #
 # A terminal based application that serves as an interactive portal for the Ontario Public Library System. The library
 # portal object in this program contains public library data from 2017 to 2019 and options user can to navigate this data.
@@ -34,7 +34,7 @@ class LibraryPortal:
     def main_menu(self):
         """Main menu that display a list of options on the library portal and prompts the user to select one
 
-            Arguments:
+            Parameters:
                 None
             
             Returns:
@@ -78,7 +78,7 @@ class LibraryPortal:
     def next_user_action(self, current_option, *opt_nearby_branches):
         """Prompt for user to choose whether to go to the main menu or go back to perform the current option again
 
-            Arguments:
+            Parameters:
                 current_option (int or float): A number that signifies what option the current user is performing
                 *opt_nearby_branches (list): Contains a DataFrame of nearby library branches if user wants to print them again
 
@@ -112,7 +112,7 @@ class LibraryPortal:
     def branch_search(self):
         """Display the information of a user-specified library branch using its name or code
 
-            Arguments:
+            Parameters:
                 None
 
             Returns:
@@ -146,7 +146,7 @@ class LibraryPortal:
     def print_branch_info(self, branch_df):
         """Displays the information of a selected library branch to the user on the console
 
-            Arguments:
+            Parameters:
                 branch_df (DataFrame): DataFrame containing all the data of a specific library branch
 
             Returns:
@@ -185,7 +185,7 @@ class LibraryPortal:
     def library_locator(self):
         """Find library branch locations near the user based on their postal code and needs
 
-            Arguments:
+            Parameters:
                 None
             
             Returns:
@@ -253,7 +253,7 @@ class LibraryPortal:
     def print_nearby_branches(self, sorted_locations):
         """Print a list of nearby library locations and lets the user obtain information from any of them
 
-            Arguments:
+            Parameters:
                 sorted_locations (DataFrame): A filtered and sorted DataFrame containing a list of nearby library branches
             
             Returns:
@@ -290,7 +290,7 @@ class LibraryPortal:
     def access_archives(self):
         """Access yearly archives displaying various data and statistical information of the Ontario Public Library System
 
-            Arguments:
+            Parameters:
                 None
 
             Returns:
@@ -349,7 +349,7 @@ class LibraryPortal:
 def import_data():
     """Import all the Ontario Public Library data sets from the directory and merge them together
 
-        Arguments:
+        Parameters:
             None
         
         Returns:
@@ -376,7 +376,7 @@ def import_data():
 def add_columns(library_data):
     """Create two additional columns and add them to the Dataframe
 
-        Arguments:
+        Parameters:
             library_data (DataFrame): DataFrame that stores detailed information about each library branch
 
         Returns:
@@ -396,7 +396,7 @@ def add_columns(library_data):
 def generate_plot(library_data):
     """Generate a plot that illustrtes a yearly comparison of prints and e-resources by language in the Ontario Public Library System 
 
-        Argument:
+        Parameters:
             library_data (DataFrame): DataFrame that stores detailed information about each library branch
 
         Returns:
@@ -419,15 +419,15 @@ def generate_plot(library_data):
     bottom.plot(french_resources)
     top.set(title='English Resources', xlabel='Year', xticks=[2017, 2018, 2019], ylabel='Number of English Resources', ylim=[10000000, 30000000]) 
     bottom.set(title='French Resources', xlabel='Year', xticks=[2017, 2018, 2019], ylabel='Number of Frrench Resources', ylim=[200000, 1300000])
-    top.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right', fontsize='small')
-    bottom.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right', fontsize='small')
+    top.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right')
+    bottom.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right')
     plt.show()
 
 
 def main():
     """Obtain the library data and create a LibraryPortal object to serve as an interactive portal for the Ontario Public Library System
 
-        Arguments:
+        Parameters:
             None
 
         Returns:
@@ -437,7 +437,7 @@ def main():
     library_data = add_columns(import_data())
 
     # Export the merged, hierarchical dataset to an Excel file in the working directory
-    # library_data.to_excel(r'.\exported_statistics.xlsx', index=True)
+    # library_data.to_excel(r'.\exported_library_statistics.xlsx', index=True)
 
     # Generate a plot of data set using Matplotlib
     # generate_plot(library_data)
