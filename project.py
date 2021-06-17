@@ -1,3 +1,12 @@
+# ENSF 592 Project
+# Group 30
+# Timothy Mok & Aron Saengchan
+#
+# A terminal based application that serves as an interactive portal for the Ontario Public Library System. The library
+# portal object in this program contains public library data from 2017 to 2019 and options user can to navigate this data.
+# The user has the choice to select from one of four options from the Main Menu - Branch Information Search, Library Locator, 
+# Access Yearly Archives, and Quit - and can go back and forth between these actions within the interface.
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -5,18 +14,19 @@ import re
 
 
 class LibraryPortal:
-    """A class used to represent an interactive library portal
+    """A class used to represent an interactive library portal interface
 
         Attributes:
             data (DataFrame): DataFrame that stores detailed information about each library branch
 
         Methods:
-            main_menu(): Prompt user to select an action in the library portal
+            main_menu(): Prompt user to select an option in the library portal
+            next_user_action(current_option, *opt_nearby_branches): Prompt user to go back to the Main Menu or repeat the current action
             branch_search(): Search the data for information of a specific library branch
+            print_branch_info(branch_df): Print the information of a specific library branch
             library_locator(): Find a library nearby based on user's postal code and needs
-            print_nearby_branches():
+            print_nearby_branches(sorted_locations): Print the list of nearby library branches
             access_archive(): Access yearly data and statisical information of the library system
-            print_branch_data(): Print the information of a specific library branch
     """
     def __init__(self, data):
         self.__data = data
@@ -30,7 +40,7 @@ class LibraryPortal:
             Returns:
                 None
         """
-        print("\n*****MAIN MENU*****")
+        print("\n*****MAIN MENU*****\n")
         print("1. Branch Information Search")
         print("2. Library Locator")
         print("3. Access Yearly Archives")
@@ -44,15 +54,15 @@ class LibraryPortal:
 
                 if user_selection == 1:
                     # Option 1: Branch Information Search
-                    # A tool to find more information about a specific library branch
+                    # A tool to find information about a specific library branch
                     self.branch_search()
                 elif user_selection == 2:
                     # Option 2: Library Locator
-                    # A tool to find a library branch near you
+                    # A tool to find a suitable library branch near you
                     self.library_locator()
                 elif user_selection == 3:
                     # Option 3: Access Yearly Archives
-                    # A tool to view yearly statistics of the Ontario Public Library System
+                    # A tool to view yearly data and statistics of the library system
                     self.access_archives()
                 elif user_selection == 4:
                     # Option 4: Quit
@@ -62,17 +72,18 @@ class LibraryPortal:
                 else:
                     raise ValueError
             except ValueError:
-                # Raise ValueError if input in invalid
+                # Raise ValueError if input is invalid
                 print("Invalid input. Please enter a number between 1 and 4.")
 
     def next_user_action(self, current_option, *opt_nearby_branches):
         """Prompt for user to choose whether to go to the main menu or go back to perform the current option again
 
             Arguments:
-                None
-            
+                current_option (int or float): A number that signifies what option the current user is performing
+                *opt_nearby_branches (list): Contains a DataFrame of nearby library branches if user wants to print them again
+
             Returns:
-                True for library_locator() selection if user wants to go back, otherwise None
+                None
         """
         # Prompt user to select an option
         while True:
@@ -84,6 +95,7 @@ class LibraryPortal:
                     # If user enters 'm', go back to the main menu. 
                     self.main_menu()
                 elif next_action == 'b' and current_option == 1:
+                    # If user enters 'b' for any of the options below, perform previous action
                     self.branch_search()
                 elif next_action == 'b' and current_option == 2.1:
                     self.library_locator()
@@ -94,11 +106,11 @@ class LibraryPortal:
                 else:
                     raise ValueError
             except ValueError:
-                # Raise ValueError if input in invalid
+                # Raise ValueError if input is invalid
                 print("Invalid input. Please enter again.")
 
     def branch_search(self):
-        """Search tool that displays the information of a user-specified library branch
+        """Display the information of a user-specified library branch using its name or code
 
             Arguments:
                 None
@@ -106,7 +118,7 @@ class LibraryPortal:
             Returns:
                 None
         """
-        print("\n*****BRANCH INFORMATION SEARCH*****")
+        print("\n*****BRANCH INFORMATION SEARCH*****\n")
 
         # Prompt user input for library branch name or code
         while True:
@@ -125,14 +137,53 @@ class LibraryPortal:
                 else:
                     raise ValueError
             except ValueError:
-                # Raise ValueError if input in invalid
+                # Raise ValueError if input is invalid
                 print("Invalid library name or code. Please enter again.")
 
         self.print_branch_info(branch_data)  # Print the information of the selected library branch
         self.next_user_action(1)  # Prompt user to select next action
 
+    def print_branch_info(self, branch_df):
+        """Displays the information of a selected library branch to the user on the console
+
+            Arguments:
+                branch_df (DataFrame): DataFrame containing all the data of a specific library branch
+
+            Returns:
+                None 
+        """
+        branch_series = branch_df.iloc[-1]  # Slice the data of the most recent year (2019) from the DataFrame
+
+        # Create a dictionary to map the keys to their correct value counterparts in the DataFrame using the proper indices
+        branch_dict = {"Library Name": branch_df.index[-1][0],
+                        "Library Number": branch_df.index[-1][1],
+                        "Service Region" : branch_series['Ontario Library Service Region'],
+                        "Street Address": None,  # Initialized as 'None' to properly format the address below
+                        "Website": branch_series['Web Site Address'],
+                        "Number of Print Resources": branch_series['Total Print Titles Held'],
+                        "Number of e-Book/e-Audio Resources": branch_series['Total E-book and E-audio Titles']
+                        }
+
+        try:
+            # Try formatting select element to generate a proper street address of the library branch
+            branch_dict['Street Address'] = branch_series['Street Address'] + "\n\t\t" + branch_series['City/Town'] + ", ON, " + branch_series['Postal Code']
+        except TypeError:
+            # If data is missing in any of the elements, assign the 'Street Address' key with a NaN value
+            branch_dict["Street Address"] = np.nan
+
+        print("\n***LIBRARY BRANCH INFORMATION***\n")
+
+        # Iterate through branch dictionary to print its information in a readable format
+        for header, info in branch_dict.items():
+            if info is np.nan:
+                # If dataset value is NaN, print "N/A" for the field
+                print(header + ": N/A")
+            else:
+                # Otherwise, print the value in the dictionary
+                print(header + ": " + str(info))
+
     def library_locator(self):
-        """Search tool to find a library branch locations near the user based on their postal code and needs
+        """Find library branch locations near the user based on their postal code and needs
 
             Arguments:
                 None
@@ -140,24 +191,24 @@ class LibraryPortal:
             Returns:
                 None
         """
-        print("\n*****LIBRARY LOCATOR*****")
+        print("\n*****LIBRARY LOCATOR*****\n")
 
         # Prompt user to input a postal code
         while True:
             postal_code = input("Please enter a postal code (K1A1A1): ")
 
             try:
-                # Check if postal code is valid (e.g. contains six alternating alphanumeric characters) using regex
+                # Check if postal code is valid (i.e. contains six alternating alphanumeric characters) using regex
                 if len(postal_code) == 6 and re.compile(r'([a-zA-Z][0-9]){3}').match(postal_code):
                     postal_code = postal_code.upper()  # Convert letters to uppercase if any are lowercase
                     break
                 else:
                     raise ValueError
             except ValueError:
-                # Raise ValueError if input in invalid
+                # Raise ValueError if input is invalid
                 print("Please enter a valid postal code.")
 
-        # Use a boolean mask to filter the postal codes from the library branches that match the first three characters of the user's postal code
+        # Use a boolean mask to filter the postal codes of the library branches that match the first three characters of the user's postal code
         data_by_postal_code = self.__data.loc[pd.IndexSlice[:, :, 2019], pd.IndexSlice[:]][self.__data.loc[pd.IndexSlice[:, :, 2019], pd.IndexSlice['Postal Code']].str.match(r'^' + postal_code[:3])]
 
         if len(data_by_postal_code.index) == 0:
@@ -166,7 +217,7 @@ class LibraryPortal:
             self.next_user_action(2.1)
 
         else:
-            # Otherwise attepmpt to find library branches nearby
+            # Otherwise, sort the nearby library branches based on the user's needs
             print("\nWhat are you looking for today?")
             print("1. Borrow Library Resources")
             print("2. Work or Study Spaces")
@@ -188,20 +239,29 @@ class LibraryPortal:
                         data_by_postal_code = data_by_postal_code.sort_values('No. Cardholders')
                         break
                     elif user_selection == 3:
-                        # If user has no preference, randomize the filter DataFrame
+                        # If user has no preference, randomize the filtered DataFrame
                         data_by_postal_code = data_by_postal_code.sample(frac=1)
                         break
                     else:
                         raise ValueError
                 except ValueError:
-                    # Raise ValueError if input in invalid
+                    # Raise ValueError if input is invalid
                     print("Invalid input. Please enter a number between 1 and 3.")
         
             self.print_nearby_branches(data_by_postal_code)  # Print the nearby library branches
                 
     def print_nearby_branches(self, sorted_locations):
+        """Print a list of nearby library locations and lets the user obtain information from any of them
+
+            Arguments:
+                sorted_locations (DataFrame): A filtered and sorted DataFrame containing a list of nearby library branches
+            
+            Returns:
+                None
+        """
         # Print the first five library branches nearby and available to the user
         print("\nHere's a list of libraries we found for you:")
+
         for i, row_index in enumerate(sorted_locations.iterrows(), start=1):
             print(str(i) + ". " + row_index[0][0])
         
@@ -214,96 +274,76 @@ class LibraryPortal:
                 branch_selection = int(input("\nSelect a number to view its branch information: "))
 
                 if branch_selection in range(1, 6):
-                    # If valid number, get the library name and slice of its data from the original DataFrame
+                    # If valid number, obtain the library name
                     branch_name = sorted_locations.index.get_level_values('Library Full Name')[branch_selection - 1]
                     break
                 else:
                     raise ValueError
             except:
-                # Raise ValueError if input in invalid
+                # Raise ValueError if input is invalid
                 print("Invalid input. Please enter a number between 1 and 5.")
-    
+
+        # Use the library name to slice its data from the original DataFrame
         self.print_branch_info(self.__data.loc[pd.IndexSlice[branch_name, :, :], pd.IndexSlice[:]])
         self.next_user_action(2.2, sorted_locations)  # Prompt user to select next action
 
     def access_archives(self):
-        while True:
-            try:
-                year = int(input("Please enter a year between 2017 and 2019: "))
-
-                if year in range(2017, 2020):
-                    break
-                else:
-                    raise ValueError
-            except ValueError:
-                print("Invalid archive year. Please enter again.")
-
-        print("\n*****LIBRARY STATISTICAL ARCHIVES IN " + str(year) + "*****")
-
-        sum_data = self.__data.groupby('Year').sum().loc[year, :]
-        sum_data.rename('sum', inplace = True)
-        sum_dataframe = pd.DataFrame(sum_data)
-       
-        described_data = pd.concat([self.__data.loc[pd.IndexSlice[:, :, year], pd.IndexSlice[:]].describe(), sum_dataframe.T])
-
-        print("\n***GENERAL DATA STATISTICS***\n")
-        print(described_data)
-
-        print("\n***AVERAGE RESOURCES PER CARDHOLDER BY SERVICE REGION & TYPE***")
-        service_type_pivot = self.__data.pivot_table('Resources per Cardholder', index='Service Type', columns='Ontario Library Service Region')
-        service_type_pivot.replace(0, "0.0*", inplace=True)
-        service_type_pivot.replace(np.nan, "N/A**", inplace=True)
-        print(service_type_pivot)
-        
-        print("\nNotes:")
-        print("  *[0.0] may indicate missing data for some library branches")
-        print("  **[N/A] denotes that the service type is not offered in the corresponding region")
-
-        print("\n***LIBRARY RECORDS***")
-        # Add library records
-        for col in self.__data.columns[8:]:
-            max_value = self.__data.loc[pd.IndexSlice[:, :, year], pd.IndexSlice[col]].max()
-            branch_name = self.__data[self.__data[col] == max_value].index[0][0]
-            print("Most " + col + ": " + branch_name + " (" + str(max_value) + ")")
-
-    def print_branch_info(self, branch_df):
-        """Displays the information of a selected library branch to the user on the console
+        """Access yearly archives displaying various data and statistical information of the Ontario Public Library System
 
             Arguments:
-                branch_df (DataFrame): A DataFrame containing all the data of a specific library branch
+                None
 
             Returns:
                 None 
         """
-        branch_series = branch_df.iloc[-1]  # Slice the data of the most recent year (2019) from the DataFrame
+        print("\n*****ACCESS LIBRARY ARCHIVES*****")
 
-        # Create a dictionary to map the keys to their correct value counterparts in the DataFrame using the proper indices
-        branch_dict = {"Library Name": branch_df.index[-1][0],
-                        "Library Number": branch_df.index[-1][1],
-                        "Service Region" : branch_series['Ontario Library Service Region'],
-                        "Street Address": None,  # Initialized as 'None' to properly format the address below
-                        "Website": branch_series['Web Site Address'],
-                        "Number of Print Resources": branch_series['Total Print Titles Held'],
-                        "Number of e-Book/e-Audio Resources": branch_series['Total E-book and E-audio Titles']
-                        }
+        # Prompt user to enter a year between 2017 and 2019
+        while True:
+            try:
+                year = int(input("\nPlease enter a year between 2017 and 2019: "))
 
-        try:
-            # Try formatting select element to generate a proper street address of the library branch
-            branch_dict["Street Address"] = branch_series['Street Address'] + "\n\t\t" + branch_series['City/Town'] + ", ON, " + branch_series['Postal Code']
-        except TypeError:
-            # If data in missing in any of the elements, assign "Street Address" key with a NaN value
-            branch_dict["Street Address"] = np.nan
+                if year in range(2017, 2020):
+                    # If year is valid, print the archive data of that year
+                    break
+                else:
+                    raise ValueError
+            except ValueError:
+                # Raise ValueError if input is invalid
+                print("Invalid archive year. Please enter again.")
 
-        print("\n***LIBRARY BRANCH INFORMATION***")
+        print("\n***LIBRARY STATISTICAL ARCHIVES IN " + str(year) + "***")
 
-        # Iterate through branch dictionary to print its information in a readable format
-        for header, info in branch_dict.items():
-            if info is np.nan:
-                # If dataset value is NaN, print "N/A" for the field
-                print(header + ": N/A")
-            else:
-                # Otherwise, print the value in the dataset
-                print(header + ": " + str(info))
+        # Create a row that aggregates the sum of all columns in the DataFrame
+        sum_row = self.__data.groupby('Year').sum().loc[year, :]
+        sum_row.rename('sum', inplace = True)
+        sum_df = pd.DataFrame(sum_row)
+       
+        # Concatenate the summed row to a set of described data statistics and print the DataFrame
+        print("\n***GENERAL DATA STATISTICS***\n")
+        described_data = pd.concat([self.__data.loc[pd.IndexSlice[:, :, year], pd.IndexSlice[:]].describe(), sum_df.T])
+        print(described_data)
+
+        # Create and print a pivot table containing the average 'Resources per Cardholder' by 'Service Region' and 'Service Type'
+        print("\n***AVERAGE RESOURCES PER CARDHOLDER BY SERVICE REGION & TYPE***\n")
+        service_type_pivot = self.__data.pivot_table('Resources per Cardholder', index='Service Type', columns='Ontario Library Service Region')
+        service_type_pivot.replace(0, "0.0*", inplace=True)  # Add annotations to null values for the side notes below
+        service_type_pivot.replace(np.nan, "N/A**", inplace=True)  # Add annotations to NaN values for the side notes below
+        print(service_type_pivot)
+        
+        # Display side notes pertaining to the null or NaN values in the above pivot table
+        print("\nNotes:")
+        print("  *0.0 may indicate missing data for some library branches")
+        print("  **N/A denotes that the service type is not offered in the corresponding region")
+
+        print("\n***LIBRARY RECORDS***\n")
+        # Print the libraries with the max values in each column, serving as the library record-holders
+        for col in self.__data.columns['No. Cardholders':]:
+            max_value = self.__data.loc[pd.IndexSlice[:, :, year], pd.IndexSlice[col]].max()
+            branch_name = self.__data[self.__data[col] == max_value].index[0][0]
+            print("Most " + col + ": " + branch_name + " (" + str(max_value) + ")")
+        
+        self.next_user_action(3)  # Prompt user to select next action
 
 
 def import_data():
@@ -325,7 +365,7 @@ def import_data():
     library_data_master = pd.merge(library_data_merge, library_data_2019, on=list(library_data_2019.columns), how='outer')
 
     # Forward fill the missing 'Street Address' columns with valid 'Mailing Address' columns
-    library_data_master[['Mailing Address', 'Street Address']] = library_data_master[['Mailing Address', 'Street Address']].fillna(method = 'ffill', axis = 1)
+    library_data_master[['Mailing Address', 'Street Address']] = library_data_master[['Mailing Address', 'Street Address']].fillna(method='ffill', axis=1)
 
     # Sort the indices to obtain an organized DataFrame with hierarchical indices
     library_data_master = library_data_master.set_index(['Library Full Name', 'Library Number', 'Year']).sort_index()
@@ -334,16 +374,16 @@ def import_data():
 
 
 def add_columns(library_data):
-    """Create two columns ("Total Print Titles Held" and "Resources per Cardholder") and merge them to the original data set
+    """Create two additional columns and add them to the Dataframe
 
         Arguments:
             library_data (DataFrame): DataFrame that stores detailed information about each library branch
 
         Returns:
-            The original DataFrame with two added columns ("Total Print Titles Held" and "Resources per Cardholder")
+            The original DataFrame with two added columns ('Total Print Titles Held' and 'Resources per Cardholder')
 
     """
-    # Create a two columns of the total print titles held and resource available per cardholder, then add it to the merged data set
+    # Create a two columns of the total print titles held and resource available per cardholder, and add it to the DataFrame
     library_data['Total Resources'] = library_data['Total Print Titles Held'] + library_data['Total E-book and E-audio Titles']
     library_data['Resources per Cardholder'] = library_data['Total Resources'] / library_data['No. Cardholders']
     
@@ -354,7 +394,7 @@ def add_columns(library_data):
 
 
 def generate_plot(library_data):
-    """Generate a plot that illustrtes a yearly comparison of print and e-resources by language in the Ontario Public Library System 
+    """Generate a plot that illustrtes a yearly comparison of prints and e-resources by language in the Ontario Public Library System 
 
         Argument:
             library_data (DataFrame): DataFrame that stores detailed information about each library branch
@@ -362,15 +402,15 @@ def generate_plot(library_data):
         Returns:
             None
     """
-    # Slice the sum of the number of print titles and e-resources data from the original DataFrame
+    # Slice the sum of the number of print titles and e-resources data from the DataFrame
     print_titles_data = library_data.groupby('Year').sum().loc[pd.IndexSlice[:], pd.IndexSlice['English Print Titles Held':'French Print Titles Held']]
     eresources_data = library_data.groupby('Year').sum().loc[pd.IndexSlice[:], pd.IndexSlice['English E-book and E-audio Titles':'French E-book and E-audio Titles']]
 
-    # Merge the data into two separate DataFrames categorized by language
+    # Merge the data into two other separate DataFrames categorized by language
     english_resources = pd.merge(print_titles_data['English Print Titles Held'], eresources_data['English E-book and E-audio Titles'], on='Year')
     french_resources = pd.merge(print_titles_data['French Print Titles Held'], eresources_data['French E-book and E-audio Titles'], on='Year')
 
-    # Create a plot containing two sub-plots for each langages and format the figure
+    # Create a plot containing two sub-plots for each language and format the figure
     plt.figure(1)
     subplot = plt.figure(1)
     (top, bottom) = subplot.subplots(2)
@@ -385,7 +425,7 @@ def generate_plot(library_data):
 
 
 def main():
-    """Create a LibraryPortal object and run its methods to function as an interactive portal for the Ontario Public Library System
+    """Obtain the library data and create a LibraryPortal object to serve as an interactive portal for the Ontario Public Library System
 
         Arguments:
             None
@@ -397,14 +437,14 @@ def main():
     library_data = add_columns(import_data())
 
     # Export the merged, hierarchical dataset to an Excel file in the working directory
-    library_data.to_excel(r'.\merged_ontario_public_library_statistics.xlsx', index=True)
+    # library_data.to_excel(r'.\exported_statistics.xlsx', index=True)
+
+    # Generate a plot of data set using Matplotlib
+    # generate_plot(library_data)
     
     # Create a LibraryPortal object and access the main menu
     portal = LibraryPortal(library_data)
     portal.main_menu()
-
-    # Generate a plot of data set using Matplotlib
-    generate_plot(library_data)
 
 
 if __name__ == '__main__':
