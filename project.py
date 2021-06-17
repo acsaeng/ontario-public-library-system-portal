@@ -159,7 +159,7 @@ class LibraryPortal:
                         "Library Number": branch_df.index[-1][1],
                         "Service Region" : branch_series['Ontario Library Service Region'],
                         "Street Address": None,  # Initialized as 'None' to properly format the address below
-                        "Website": branch_series['Web Site Address'],
+                        "Website or E-mail": branch_series['Web Site Address'],
                         "Number of Print Resources": branch_series['Total Print Titles Held'],
                         "Number of e-Book/e-Audio Resources": branch_series['Total E-book and E-audio Titles']
                         }
