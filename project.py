@@ -338,7 +338,7 @@ class LibraryPortal:
 
         print("\n***LIBRARY RECORDS***\n")
         # Print the libraries with the max values in each column, serving as the library record-holders
-        for col in self.__data.columns['No. Cardholders':]:
+        for col in self.__data.columns[8:]:
             max_value = self.__data.loc[pd.IndexSlice[:, :, year], pd.IndexSlice[col]].max()
             branch_name = self.__data[self.__data[col] == max_value].index[0][0]
             print("Most " + col + ": " + branch_name + " (" + str(max_value) + ")")
