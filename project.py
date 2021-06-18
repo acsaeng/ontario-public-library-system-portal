@@ -28,7 +28,7 @@ class LibraryPortal:
             print_branch_info(branch_df): Print the information of a specific library branch
             library_locator(): Find a library branch nearby based on user's postal code and needs
             print_nearby_branches(sorted_locations): Print a list of nearby library branches
-            access_archive(): Access yearly data and statisical information of the library system
+            access_archive(): Access yearly data and statistical information of the library system
             generate_plots(year): Generate two plots and output it to the user 
     """
     def __init__(self, data):
@@ -160,7 +160,7 @@ class LibraryPortal:
         # Create a dictionary to map the keys to their correct value counterparts in the DataFrame columns using the proper indices
         branch_dict = {"Library Name": branch_df.index[-1][0],
                         "Library Number": branch_df.index[-1][1],
-                        "Service Region" : branch_series['Ontario Library Service Region'],
+                        "Service Region": branch_series['Ontario Library Service Region'],
                         "Street Address": None,  # Initialized as 'None' to properly format the address below
                         "Website or E-mail": branch_series['Web Site Address'],
                         "Number of Print Resources": branch_series['Total Print Titles Held'],
@@ -281,7 +281,7 @@ class LibraryPortal:
                     break
                 else:
                     raise ValueError
-            except:
+            except ValueError:
                 # Raise ValueError if input is invalid
                 print("Invalid input. Please enter a number between 1 and 5.")
 
@@ -306,7 +306,7 @@ class LibraryPortal:
                 year = int(input("Please enter a year between 2017 and 2019: "))
 
                 if year in range(2017, 2020):
-                    # If year is valid, break aand print the archived data from that year
+                    # If year is valid, break and print the archived data from that year
                     break
                 else:
                     raise ValueError
@@ -318,7 +318,7 @@ class LibraryPortal:
 
         # Create a row that aggregates the sum of all columns in the DataFrame
         sum_row = self.__data.groupby('Year').sum().loc[year, :]
-        sum_row.rename('sum', inplace = True)
+        sum_row.rename('sum', inplace=True)
         sum_df = pd.DataFrame(sum_row)
        
         # Concatenate the summed row to a set of described data statistics and print the DataFrame
@@ -352,7 +352,7 @@ class LibraryPortal:
         self.next_user_action(3)  # Prompt user to select next action
 
     def generate_plots(self, year):
-        """Generate a line and a bar plot that illustrtes a comparison of the number of prints and e-resources by language and year
+        """Generate a line and a bar plot that illustrates a comparison of the number of prints and e-resources by language and year
 
             Parameters:
                 year (int): A specified year that dictates the data the first plot will display
@@ -385,7 +385,7 @@ class LibraryPortal:
         top.plot(english_resources)
         bottom.plot(french_resources)
         top.set(title='English Resources', xlabel='Year', xticks=[2017, 2018, 2019], ylabel='Number of English Resources', ylim=[10000000, 30000000]) 
-        bottom.set(title='French Resources', xlabel='Year', xticks=[2017, 2018, 2019], ylabel='Number of Frrench Resources', ylim=[200000, 1300000])
+        bottom.set(title='French Resources', xlabel='Year', xticks=[2017, 2018, 2019], ylabel='Number of French Resources', ylim=[200000, 1300000])
         top.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right')
         bottom.legend(['Print Titles ', 'E-book and E-audio Titles'], loc='upper right')
         
