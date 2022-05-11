@@ -7,10 +7,10 @@ This project focuses on a data set of statistics for the Ontario Public Library 
 
 The program opens to a `Main Menu` where the user has four options to choose from:
 
-1. *Branch Information Search* – The user is prompted to enter a library name or code and the program will provide them with specific information, including the address, website, and number of print/electronic resources available at that branch.
-2. *Library Locator* – The user is prompted to enter a postal code and the program searches for any nearby libraries, while also considering the user’s needs. If any nearby branches are found, the program prints a list of them and allows the user to obtain information about a specific branch.
-3. *Access Yearly Archives* – The user is prompted to enter a year between 2017 to 2019 and the program displays various statistical information from that year, from statistics of all library branches in the system to specific record-holders of each column in the data set.
-4. *Quit* – Exits the program.
+1. **Branch Information Search** – The user is prompted to enter a library name or code and the program will provide them with specific information, including the address, website, and number of print/electronic resources available at that branch.
+2. **Library Locator** – The user is prompted to enter a postal code and the program searches for any nearby libraries, while also considering the user’s needs. If any nearby branches are found, the program prints a list of them and allows the user to obtain information about a specific branch.
+3. **Access Yearly Archives** – The user is prompted to enter a year between 2017 to 2019 and the program displays various statistical information from that year, from statistics of all library branches in the system to specific record-holders of each column in the data set.
+4. **Quit** – Exits the program.
 
 After each action, the user can perform the previous action again or return to the `Main Menu`. To start the program, open `opl_system_portal.py` and run the file.
 
